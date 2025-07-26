@@ -1,6 +1,8 @@
 use chrono::Utc;
 use sha2::{Sha256, Digest};
 
+const DIFFICULTY_PREFIX : &str = "00000";
+
 fn main() {
 
     let transaction_1 = Transaction{
@@ -20,6 +22,7 @@ fn main() {
 
     println!("Block Hash : {}", block.hash);
     println!("Block Height : {}", block.height);
+    println!("Block Nonce : {}", block.nonce);
 
 }
 
@@ -43,17 +46,17 @@ pub struct Block {
 pub fn create_new_block(pre_block_hash : String, transactions : &[Transaction], height : usize) -> Block {
     
     let timestamp = current_timestamp();
-    let nonce = 0;
+    
     let mut block = Block{
         timestamp,
         pre_block_hash : pre_block_hash.clone(),
         hash : String::new(),
         transactions : transactions.to_vec(),
-        nonce,
+        nonce : 0,
         height,
     };
 
-    block.hash = calculate_hash(&block);
+    mine_block(&mut block);
     block
 }
 
@@ -78,4 +81,19 @@ fn calculate_hash(block : &Block) -> String {
 
 fn current_timestamp() -> i64 {
     Utc::now().timestamp()
+}
+
+fn mine_block(block : &mut Block) {
+    println!("Mining Block..");
+    loop {
+        let hash = calculate_hash(block);
+        if hash.starts_with(DIFFICULTY_PREFIX) {
+            block.hash = hash;
+            break;
+        }
+        else {
+            block.nonce += 1;
+        }
+    }
+    println!("Block Mined Successfully.");
 }
