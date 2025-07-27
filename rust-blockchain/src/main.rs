@@ -5,6 +5,8 @@ const DIFFICULTY_PREFIX : &str = "00000";
 
 fn main() {
 
+    let blockchain= Blockchain {chain :  vec![]};
+
     let transaction_1 = Transaction{
         sender : "Alice".to_string(),
         receiver : "Bob".to_string(),
@@ -23,6 +25,15 @@ fn main() {
     println!("Block Hash : {}", block.hash);
     println!("Block Height : {}", block.height);
     println!("Block Nonce : {}", block.nonce);
+
+    println!("\nValidating the Block..");
+
+    if blockchain.is_chain_valid() {
+        println!("The Block is Valid.")
+    }
+    else {
+        println!("This is an Invalid Block.");
+    }
 
 }
 
@@ -96,4 +107,30 @@ fn mine_block(block : &mut Block) {
         }
     }
     println!("Block Mined Successfully.");
+}
+
+
+pub struct Blockchain {
+    pub chain: Vec<Block>,
+}
+
+impl Blockchain {
+    
+
+pub fn is_chain_valid(&self) -> bool {
+    for i in 1..self.chain.len(){
+        let current = &self.chain[i];
+        let previous = &self.chain[i - 1];
+
+        if current.pre_block_hash != previous.hash {
+            return false;
+        }
+
+        if calculate_hash(current) != current.hash {
+            return false;
+        }
+    }
+    true
+}
+
 }
