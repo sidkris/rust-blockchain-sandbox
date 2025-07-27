@@ -5,8 +5,6 @@ const DIFFICULTY_PREFIX : &str = "00000";
 
 fn main() {
 
-    let blockchain= Blockchain {chain :  vec![]};
-
     let transaction_1 = Transaction{
         sender : "Alice".to_string(),
         receiver : "Bob".to_string(),
@@ -19,12 +17,14 @@ fn main() {
         amount : 5.0,
     };
 
+    let mut blockchain= Blockchain::new();
+    blockchain.add_block(&[transaction_1, transaction_2]);
 
-    let block = create_new_block("000000".to_string(), &[transaction_1, transaction_2], 1);
+    let latest_block = blockchain.chain.last().unwrap();
 
-    println!("Block Hash : {}", block.hash);
-    println!("Block Height : {}", block.height);
-    println!("Block Nonce : {}", block.nonce);
+    println!("Block Hash : {}", latest_block.hash);
+    println!("Block Height : {}", latest_block.height);
+    println!("Block Nonce : {}", latest_block.nonce);
 
     println!("\nValidating the Block..");
 
@@ -115,7 +115,18 @@ pub struct Blockchain {
 }
 
 impl Blockchain {
+
+pub fn new() -> Self {
+    let genesis_block = create_new_block("0".to_string(), &[], 0);
+    Blockchain { chain: vec![genesis_block] }
+}
     
+
+pub fn add_block(&mut self, transactions : &[Transaction]) {
+    let previous = self.chain.last().unwrap();
+    let new_block = create_new_block(previous.hash.clone(), transactions, self.chain.len());
+    self.chain.push(new_block);
+}
 
 pub fn is_chain_valid(&self) -> bool {
     for i in 1..self.chain.len(){
